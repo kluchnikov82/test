@@ -33,11 +33,7 @@ class NewChecksView(generics.ListAPIView):
 
 class CheckView(generics.ListAPIView):
 
-    def get(self, request, *args, **kwargs):
-        data = request.data
-        api_key, key = APIKey.objects.create_key(name="my-remote-service")
-        print(api_key)
-        return Response(data, status=status.HTTP_200_OK)
+    pass
 
 
 class CreateChecksView(generics.CreateAPIView):

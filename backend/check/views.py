@@ -1,9 +1,15 @@
+from django.conf import settings
 from rest_framework import generics, status
 from rest_framework_api_key.models import APIKey
 from rest_framework.response import Response
 from rest_framework_api_key.permissions import HasAPIKey
 from .models import Check, Printer
 from .serializers import CheckSzr, CheckListSzr
+import django_rq
+from .tasks import *
+import pdfkit
+import os
+
 
 
 class NewChecksView(generics.ListAPIView):
@@ -11,6 +17,8 @@ class NewChecksView(generics.ListAPIView):
     serializer_class = CheckListSzr
 
     def get(self, request, *args, **kwargs):
+        queue = django_rq.get_queue('default')
+        queue.enqueue(task)
         try:
             Printer.objects.get(api_key=request.query_params['api_key'])
         except Printer.DoesNotExist:
@@ -32,8 +40,12 @@ class NewChecksView(generics.ListAPIView):
 
 
 class CheckView(generics.ListAPIView):
+    def get(self, request, *args, **kwargs):
+        pdfkit.from_file(str(settings.BASE_DIR) + '/templates/client_check.html', str(settings.BASE_DIR) + '/media/out.pdf')
+        return Response(
+            status=status.HTTP_200_OK,
+            data={'message': 'Чек успешно создан'})
 
-    pass
 
 
 class CreateChecksView(generics.CreateAPIView):

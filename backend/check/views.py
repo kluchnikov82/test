@@ -9,6 +9,7 @@ import django_rq
 from .tasks import *
 import pdfkit
 import os
+from django.template.loader import render_to_string, get_template
 
 
 
@@ -41,7 +42,15 @@ class NewChecksView(generics.ListAPIView):
 
 class CheckView(generics.ListAPIView):
     def get(self, request, *args, **kwargs):
-        pdfkit.from_file(str(settings.BASE_DIR) + '/templates/client_check.html', str(settings.BASE_DIR) + '/media/out.pdf')
+        checks = Check.objects.filter(status='Новый')
+        for check in checks:
+            context = {'check': check}
+            content = render_to_string('base_client_check.html', context)
+            with open(str(settings.BASE_DIR) + '/templates/client.html', 'w') as static_file:
+                static_file.write(content)
+
+            pdfkit.from_file(str(settings.BASE_DIR) + '/templates/client.html', str(settings.BASE_DIR) + '/media/out.pdf')
+
         return Response(
             status=status.HTTP_200_OK,
             data={'message': 'Чек успешно создан'})

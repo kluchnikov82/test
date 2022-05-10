@@ -1,16 +1,12 @@
-from django.conf import settings
 from rest_framework import generics, status
-from rest_framework_api_key.models import APIKey
 from rest_framework.response import Response
-from rest_framework_api_key.permissions import HasAPIKey
+from rest_framework.utils import json
+
 from .models import Check, Printer
 from .serializers import CheckSzr, CheckListSzr
-import django_rq
-from .tasks import *
-import pdfkit
-import os
-from django.template.loader import render_to_string, get_template
-
+import os.path
+from django.conf import settings
+from django.http import JsonResponse, HttpResponse
 
 
 class NewChecksView(generics.ListAPIView):
@@ -54,6 +50,16 @@ class CheckView(generics.ListAPIView):
                 status=status.HTTP_400_BAD_REQUEST,
                 data={'message': 'Данного чека не существует'}
             )
+
+        data = ''
+        for check in checks:
+            if os.path.exists(str(settings.BASE_DIR) + '/media/' + str(check.order['id']) + '_client.pdf'):
+                data = str(check.order['id']) + '_client.pdf'
+            if os.path.exists(str(settings.BASE_DIR) + '/media/' + str(check.order['id']) + '_kitchen.pdf'):
+                data += '; ' + str(check.order['id']) + '_kitchen.pdf'
+
+        return HttpResponse(json.dumps({"data": data}), content_type='application/json')
+
 
 
 

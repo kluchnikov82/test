@@ -14,17 +14,17 @@ def task(*args, **kwargs):
     for check in checks:
         context = {'check': check}
         content = render_to_string('base_client_check.html', context)
-        with open(str(settings.BASE_DIR) + '/templates/client.html', 'w') as static_file:
+        with open(str(settings.BASE_DIR) + '/templates/template.html', 'w') as static_file:
             static_file.write(content)
 
-        pdfkit.from_file(str(settings.BASE_DIR) + '/templates/client.html',
+        pdfkit.from_file(str(settings.BASE_DIR) + '/templates/template.html',
                          str(settings.BASE_DIR) + '/media/' + str(check.order['id']) + '_client.pdf')
 
         content = render_to_string('base_kitchen_check.html', context)
-        with open(str(settings.BASE_DIR) + '/templates/client.html', 'w') as static_file:
+        with open(str(settings.BASE_DIR) + '/templates/template.html', 'w') as static_file:
             static_file.write(content)
 
-        pdfkit.from_file(str(settings.BASE_DIR) + '/templates/client.html',
+        pdfkit.from_file(str(settings.BASE_DIR) + '/templates/template.html',
                          str(settings.BASE_DIR) + '/media/' + str(check.order['id']) + '_kitchen.pdf')
 
 

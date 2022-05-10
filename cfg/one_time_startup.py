@@ -3,11 +3,21 @@ import django_rq
 from redis import Redis
 from datetime import timedelta, datetime
 from rq_scheduler import Scheduler
-from rq import Queue, Worker
+from check.models import Check, Printer
+from django.conf import settings
+from django.template.loader import render_to_string
+import pdfkit
 
 
 def task(*args, **kwargs):
-    print('Hi!')
+    checks = Check.objects.filter(status='Новый')
+    for check in checks:
+        context = {'check': check}
+        content = render_to_string('base_client_check.html', context)
+        with open(str(settings.BASE_DIR) + '/templates/client.html', 'w') as static_file:
+            static_file.write(content)
+
+        pdfkit.from_file(str(settings.BASE_DIR) + '/templates/client.html', str(settings.BASE_DIR) + '/media/out.pdf')
 
 
 def clear_add_task():

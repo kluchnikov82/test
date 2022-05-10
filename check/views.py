@@ -42,8 +42,7 @@ class NewChecksView(generics.ListAPIView):
 
 class CheckView(generics.ListAPIView):
     def get(self, request, *args, **kwargs):
-       pass
-
+        pass
 
 
 class CreateChecksView(generics.CreateAPIView):

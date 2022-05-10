@@ -17,7 +17,15 @@ def task(*args, **kwargs):
         with open(str(settings.BASE_DIR) + '/templates/client.html', 'w') as static_file:
             static_file.write(content)
 
-        pdfkit.from_file(str(settings.BASE_DIR) + '/templates/client.html', str(settings.BASE_DIR) + '/media/out.pdf')
+        pdfkit.from_file(str(settings.BASE_DIR) + '/templates/client.html',
+                         str(settings.BASE_DIR) + '/media/' + str(check.order['id']) + '_client.pdf')
+
+        content = render_to_string('base_kitchen_check.html', context)
+        with open(str(settings.BASE_DIR) + '/templates/client.html', 'w') as static_file:
+            static_file.write(content)
+
+        pdfkit.from_file(str(settings.BASE_DIR) + '/templates/client.html',
+                         str(settings.BASE_DIR) + '/media/' + str(check.order['id']) + '_kitchen.pdf')
 
 
 def clear_add_task():

@@ -40,22 +40,21 @@ class NewChecksView(generics.ListAPIView):
 
 class CheckView(generics.ListAPIView):
     def get(self, request, *args, **kwargs):
-        checks = Check.objects.filter(status='Новый')
-        for check in checks:
-            context = {'check': check}
-            content = render_to_string('base_client_check.html', context)
-            with open(str(settings.BASE_DIR) + '/templates/client.html', 'w') as static_file:
-                static_file.write(content)
+        try:
+            Printer.objects.get(api_key=request.query_params['api_key'])
+        except Printer.DoesNotExist:
+            return Response(
+                status=status.HTTP_401_UNAUTHORIZED,
+                data={'message': 'Не существует принтера с таким api_key'}
+            )
 
-            pdfkit.from_file(str(settings.BASE_DIR) + '/templates/client.html',
-                             str(settings.BASE_DIR) + '/media/' + str(check.order['id']) + '_client.pdf')
+        checks = Check.objects.filter(printer_id__api_key=request.query_params['api_key'], uuid=request.query_params['check_id'])
+        if not checks.exists():
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST,
+                data={'message': 'Данного чека не существует'}
+            )
 
-            content = render_to_string('base_kitchen_check.html', context)
-            with open(str(settings.BASE_DIR) + '/templates/client.html', 'w') as static_file:
-                static_file.write(content)
-
-            pdfkit.from_file(str(settings.BASE_DIR) + '/templates/client.html',
-                             str(settings.BASE_DIR) + '/media/' + str(check.order['id']) + '_kitchen.pdf')
 
 
 class CreateChecksView(generics.CreateAPIView):

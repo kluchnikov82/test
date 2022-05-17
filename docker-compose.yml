@@ -61,6 +61,8 @@ services:
       - "6379:6379"
     environment:
      - REDIS_REPLICATION_MODE=master
+    depends_on:
+      - web
     networks:
       common:
         ipv4_address: 172.19.0.103

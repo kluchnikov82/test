@@ -24,6 +24,24 @@ services:
       common:
         ipv4_address: 172.19.0.100
 
+redis:
+    container_name: redis
+    hostname: redis
+    image: "redis:alpine"
+    restart: always
+#    command: redis-server
+    command: >
+      sh -c "redis-server &&
+             rqscheduler -i 5 &&
+             rq worker --with-scheduler"
+    ports:
+      - "6379:6379"
+    environment:
+     - REDIS_REPLICATION_MODE=master
+    networks:
+      common:
+        ipv4_address: 172.19.0.103
+
   web:
     container_name: django
     hostname: web
@@ -42,31 +60,10 @@ services:
       WAIT_AFTER_HOSTS: 5
     depends_on:
       - db
+      - redis
     networks:
       common:
         ipv4_address: 172.19.0.101
-
-
-  redis:
-    container_name: redis
-    hostname: redis
-    image: "redis:alpine"
-    restart: always
-#    command: redis-server
-    command: >
-      sh -c "redis-server &&
-             rqscheduler -i 5 &&
-             rq worker --with-scheduler"
-    ports:
-      - "6379:6379"
-    environment:
-     - REDIS_REPLICATION_MODE=master
-    depends_on:
-      - web
-    networks:
-      common:
-        ipv4_address: 172.19.0.103
-
 
 #Portainer
   portainer:

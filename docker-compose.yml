@@ -1,0 +1,93 @@
+version: '3.1'
+
+services:
+  # PostgreSQL
+  db:
+    image: postgres:14
+    container_name: postgres
+    hostname: db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=test_test_db
+      - LANG=ru_RU.UTF-8"
+#    user: "1000"
+    shm_size: "1gb"
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./backend/db:/var/lib/postgresql/data
+#      - ./conf/postgres/pg_hba.conf:/var/lib/postgresql/data/pg_hba.conf
+#      - ./conf/postgres/postgresql.conf:/var/lib/postgresql/data/postgresql.conf
+    restart: always
+    networks:
+      common:
+        ipv4_address: 172.19.0.100
+
+  web:
+    container_name: django
+    hostname: web
+    build: .
+    restart: always
+    entrypoint: ./entrypoint.sh
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - ./entrypoint.sh:/app/entrypoint.sh
+    environment:
+      WAIT_HOSTS: db:5432
+      WAIT_SLEEP_INTERVAL: 3
+      WAIT_HOSTS_TIMEOUT: 45
+      WAIT_AFTER_HOSTS: 5
+    depends_on:
+      - db
+    networks:
+      common:
+        ipv4_address: 172.19.0.101
+
+
+  redis:
+    container_name: redis
+    hostname: redis
+    image: "redis:alpine"
+    restart: always
+#    command: redis-server
+    command: >
+      sh -c "redis-server &&
+             rqscheduler -i 5 &&
+             rq worker --with-scheduler"
+    ports:
+      - "6379:6379"
+    environment:
+     - REDIS_REPLICATION_MODE=master
+    networks:
+      common:
+        ipv4_address: 172.19.0.103
+
+
+#Portainer
+  portainer:
+    container_name: portainer
+    image: portainer/portainer
+    command: -H unix:///var/run/docker.sock
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    ports:
+      - "9000:9000"
+    restart: always
+    networks:
+      common:
+        ipv4_address: 172.19.0.102
+
+volumes:
+  portainer_data:
+
+networks:
+  common:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.19.0.0/24

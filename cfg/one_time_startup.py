@@ -1,3 +1,5 @@
+import os
+
 import django_rq
 # from .tasks import task
 from redis import Redis
@@ -10,6 +12,8 @@ import pdfkit
 
 
 def task(*args, **kwargs):
+    settings.configure()
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'cfg.settings')
     checks = Check.objects.filter(status='Новый')
     for check in checks:
         context = {'check': check}
@@ -33,6 +37,6 @@ def clear_add_task():
     for job in scheduler.get_jobs():
         job.delete()
 
-    redis_conn = Redis()
+    redis_conn = Redis('172.19.0.103')
     scheduler = Scheduler(connection=redis_conn)
     scheduler.schedule(datetime.utcnow(), task, interval=1)

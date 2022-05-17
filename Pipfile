@@ -13,6 +13,7 @@ django-redis = "*"
 rq-scheduler = "*"
 supervisor = "*"
 wkhtmltopdf = "*"
+pdfkit = "*"
 
 [dev-packages]
 
